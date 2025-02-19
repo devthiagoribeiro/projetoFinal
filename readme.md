@@ -41,7 +41,7 @@ O **BrainWave** é um sistema interativo desenvolvido para a placa de ensino **B
 
 1. Clone este repositório:
    ```sh
-   git clone https://github.com/devthiagoribeiro/projetoFinal
+   git clone https://github.com/devthiagoribeiro/brainWave
 2. Compile o código e carregue na placa BitDogLab.
 3. Interaja com o joystick e os botões para testar as funcionalidades.
 
