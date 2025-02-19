@@ -28,40 +28,40 @@ set(PICO_BOARD pico_w CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(maestro C CXX ASM)
+project(brainWave C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(maestro maestro.c matriz_leds.c inc/ssd1306_i2c.c)
+add_executable(brainWave brainWave.c matriz_leds.c inc/ssd1306_i2c.c)
 
-pico_set_program_name(maestro "maestro")
-pico_set_program_version(maestro "0.1")
+pico_set_program_name(brainWave "brainWave")
+pico_set_program_version(brainWave "0.1")
 
 # Generate PIO header
 pico_generate_pio_header(${CMAKE_PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/pio_matrix.pio)
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(maestro 1)
-pico_enable_stdio_usb(maestro 1)
+pico_enable_stdio_uart(brainWave 1)
+pico_enable_stdio_usb(brainWave 1)
 
 # Add the standard library to the build
-target_link_libraries(maestro
+target_link_libraries(brainWave
         pico_stdlib hardware_adc)
 
 # Add the standard include files to the build
-target_include_directories(maestro PRIVATE
+target_include_directories(brainWave PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
 # Add any user requested libraries
-target_link_libraries(maestro 
+target_link_libraries(brainWave 
         hardware_pio
         hardware_clocks
         hardware_i2c
         )
 
-pico_add_extra_outputs(maestro)
+pico_add_extra_outputs(brainWave)
 
