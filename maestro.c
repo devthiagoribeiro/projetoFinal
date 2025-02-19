@@ -9,6 +9,7 @@
 #include "inc/ssd1306.h"
 #include "hardware/i2c.h"
 
+// Definição dos pinos GPIO para os componentes do hardware
 #define buzzerA 21
 #define buzzerB 10
 #define ledGrenn 11
@@ -29,6 +30,7 @@ const uint I2C_SDA = 14;
 const uint I2C_SCL = 15;
 struct render_area *frame_area_ptr; //Variável global para conseguir manipular o display oled em qualquer função
 
+// Matrizes para outras letras e uma matriz para limpar a tela
 Matriz_leds_config letraA = {
     //       Coluna 0          Coluna 1          Coluna 2          Coluna 3          Coluna 4
     //R    G    B       R    G    B       R    G    B       R    G    B       R    G    B
@@ -75,6 +77,7 @@ Matriz_leds_config game2 = {
     {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}}  // Linha 4
     };
 
+// Textos para exibição no display OLED
 char *start[8] = {
     //"             "
     "               ",
@@ -131,13 +134,18 @@ char *youLost[8] = {
         "               "
         };
 
-
-void clearLine(int i){
-    for(int j = 0 ; j < 5; j++){
-        game2[i][j] = (Led_config){0.0, 0.0, 0.0};
+// Função para limpar uma linha da matriz de LEDs
+void clearMatrizGame2(){
+    for(int i = 0; i < 5; i++){
+        for(int j = 0 ; j < 5; j++){
+            game2[i][j] = (Led_config){0.0, 0.0, 0.0};
+        }
     }
+    imprimir_desenho(game2, pio, sm);
+    
 }
 
+// Função para colorir uma célula da matriz de LEDs com base em uma cor específica
 void colorMatriz(char color, int i, int j){
     switch (color)
     {
@@ -153,7 +161,7 @@ void colorMatriz(char color, int i, int j){
     case 'Y':
         game2[i][j] = (Led_config){0.05, 0.05, 0.0};
         break;
-    case 'P':
+    case 'C':
         game2[i][j] = (Led_config){0.0, 0.05, 0.05};
         break;
     case 'W':
@@ -166,6 +174,7 @@ void colorMatriz(char color, int i, int j){
     
 }
 
+// Função para gerar um som com uma frequência e duração específicas
 void beep_tone(int frequency, int duration_ms) {
     int delay = 1000000 / (2 * frequency);  // Tempo para meio ciclo da onda (microsegundos)
     int cycles = (duration_ms * 1000) / (2 * delay);  // Número de alternâncias necessárias
@@ -180,6 +189,7 @@ void beep_tone(int frequency, int duration_ms) {
     }
 }
 
+// Função para tocar um som com base em uma letra específica
 void play_sound(char letter) {
     switch(letter) {
         case 'A':
@@ -196,6 +206,7 @@ void play_sound(char letter) {
     }
 }
 
+// Função para inicializar os pinos GPIO, matriz de LEDs, I2C e ADC
 void inicializar(){
     //Inicializa os pinos GPIO
     gpio_init(buzzerA);
@@ -238,47 +249,14 @@ void inicializar(){
     adc_gpio_init(VRX);
 }
 
+// Função para controlar os LEDs RGB
 void leds(int g, int b, int r){
     gpio_put(ledGrenn, g);
     gpio_put(ledBlue, b);
     gpio_put(ledRed, r);
 }
 
-void beep(int duration){
-    for(int i = 0; i < duration; i++){
-        gpio_put(buzzerA, 1);
-        gpio_put(buzzerB, 1);
-        sleep_ms(1);
-        gpio_put(buzzerA, 0);
-        gpio_put(buzzerB, 0);
-        sleep_ms(1);
-    }
-}
-
-void tutorial(){
-    printf("Tutorial:\n");
-    printf("Botão A - Led Verde\n");
-    leds(1, 0, 0);
-    sleep_ms(1000);
-    leds(0, 0, 0);
-    sleep_ms(1000);
-    printf("Botão B - Led Azul\n");
-    leds(0, 1, 0);
-    sleep_ms(1000);
-    leds(0, 0, 0);
-    sleep_ms(1000);
-    printf("Botão Joystick - Led Vermelho\n");
-    leds(0, 0, 1);
-    sleep_ms(1000);
-    leds(0, 0, 0);
-    sleep_ms(1000);
-    printf("Palma - Led Branco\n");
-    leds(1, 1, 1);
-    sleep_ms(1000);
-    leds(0, 0, 0);
-    sleep_ms(1000);
-}
-
+// Função para verificar a entrada do jogador e atualizar a matriz de LEDs e o som
 void verify(char key){
     if(key == 'A'){
         leds(1, 0, 0);
@@ -308,6 +286,7 @@ void verify(char key){
     
 }
 
+// Função para verificar a entrada do jogador e atualizar a matriz de LEDs, o som e o display OLED
 void verifyPlayer(char key, int j, int i){
     char *text[8];
     for (int i = 0; i < 8; i++) {
@@ -371,6 +350,7 @@ void verifyPlayer(char key, int j, int i){
     
 }
 
+// Função para escolher aleatoriamente uma letra entre 'A', 'B' e 'J'
 char choice(){
         // Array de caracteres para escolher
     char caracteres[] = {'A', 'B', 'J', 'B', 'A', 'A', 'B', 'J'};
@@ -384,6 +364,7 @@ char choice(){
     return caracteres[indice];
 }
 
+// Função para exibir texto no display OLED
 void displayOled(char *text[8],size_t line_count){
     // zera o display inteiro
         uint8_t ssd[ssd1306_buffer_length];
@@ -406,6 +387,7 @@ void displayOled(char *text[8],size_t line_count){
         render_on_display(ssd, frame_area_ptr);
 }
 
+//Contagem regressiva
 void regressiva(){
     char *tres[8] = {
         //"             "
@@ -448,6 +430,7 @@ void regressiva(){
         sleep_ms(1000);
 }
 
+//Função para exibir o menu principal de jogos
 void mainMenu(char *text[8], size_t line_count, uint y_pos){
     // zera o display inteiro
     uint8_t ssd[ssd1306_buffer_length];
@@ -475,6 +458,7 @@ void mainMenu(char *text[8], size_t line_count, uint y_pos){
     render_on_display(ssd, frame_area_ptr);
 }
 
+//Função do jogo1: Jogo da memória
 void jogo1(){
     char sequencia[100]; // 'A', 'B', 'J'
     int key = 0;
@@ -569,33 +553,38 @@ void jogo1(){
 }
 
 void jogo2(){
-    char caracteres[] = {'R', 'G', 'B', 'Y', 'P', 'W'};
-    char sequencia[5];
-    char playerChoice[5];
-    int j = 0;
-    bool situation = false;
+    char caracteres[] = {'R', 'G', 'B', 'Y', 'C', 'W'}; //Lista de caracteres usados durante o jogo
+    char sequencia[5]; //Araay que armazena a sequência sorteada para o jogo
+    char playerChoice[5]; // Array que armazena a sequência definida pelo jogador
+    int j = 0; // Variável de controle para alternar entre as cores
+    bool situation = false; // Variável de controle para inicio do game
+
+    //Texto que será modificado para mostrar informações no display
     char *text[8];
     for (int i = 0; i < 8; i++) {
-        text[i] = malloc(32 * sizeof(char)); // Aloca espaço suficiente para cada string
+        text[i] = malloc(32 * sizeof(char)); 
         if (text[i] == NULL) {
             printf("Erro ao alocar memória\n");
         }
     }
 
+    //Loop principal do jogo 
     while(true){
-        char lugarErrado[6] = {'\0'};
-        char ausente[6] = {'\0'};
+        char status[6] = {'\0'}; //String para armazenar a sequência definida pelo jogador e mostrá-la no display
+        bool sequenciaVisited[5] = {false}; // Array para controle da verificação de sequência correta
 
+        //Verifica se está na condição para mostrar a tela de início do game
         if(!situation){
-            displayOled(start, count_of(start));
-            imprimir_desenho(clear, pio, sm);
+            displayOled(start, count_of(start)); // Mostra as informações iniciais no display
+            clearMatrizGame2(); //Limpa a matriz de leds
+            //Aguarda que alguma decisão seja tomada
             while(true){
-                if(!gpio_get(btnA)) break;
-                if(!gpio_get(btnB)) return;
-                sleep_ms(5);
+                if(!gpio_get(btnA)) break; // Quebra o loop  e dá inicio ao jogo
+                if(!gpio_get(btnB)) return; // Retorna da função jogo2() para a main
+                sleep_ms(5); // Deboucing
             }
-            situation = true;
-            regressiva();
+            situation = true; //Reseta para que que a tela de início seja ignorada no decorer do jogo
+            regressiva(); // Inicia a contagem regresiva para o jogo
         }
 
         //Montagem da sequência das 5 cores
@@ -603,11 +592,14 @@ void jogo2(){
             sequencia[i] = caracteres[rand() % 6];
             printf("%c ", sequencia[i]);
         }
-        displayOled(sequenciaGame, count_of(sequenciaGame));
+        displayOled(sequenciaGame, count_of(sequenciaGame)); //Exibe uma mensagem no display instruindo o jogador a montar sua sequência
+
         //Jogador tem 5 chances para montar a sequência correta
         for(int k = 0; k < 5; k++){
             int acertos = 0;
             for(int i = 0; i < 5;){
+            colorMatriz(caracteres[j], k, i);
+            imprimir_desenho(game2, pio, sm);
                 while(true){
                     if(!gpio_get(btnA)){
                         sleep_ms(200);
@@ -630,27 +622,25 @@ void jogo2(){
                     uint bar_y_pos = adc_y_raw * bar_width / adc_max;
                     if(bar_y_pos < 16 && j > 0 ){
                         j--;
-                        printf("playerChoice[%d]: %c\n", i, caracteres[j]);
                         colorMatriz(caracteres[j], k, i);
                         imprimir_desenho(game2, pio, sm);
                         sleep_ms(200);
                     }else if(bar_y_pos > 24 && j < 5){
                         j++;
-                        printf("playerChoice[%d]: %c\n", i, caracteres[j]);
                         colorMatriz(caracteres[j], k, i);
                         imprimir_desenho(game2, pio, sm);
                         sleep_ms(200);
                     }
                 }
             }
-            
+            putchar('\n');
             //Verificação da sequência do jogador com a montada pelo sistema
-            clearLine(k);
             for(int i = 0 ; i<5;i++){
                 bool encontrado = false;
                 if(playerChoice[i] == sequencia[i]){
-                    colorMatriz(playerChoice[i], k, i);
-                    printf("%c ", playerChoice[i]);
+                    status[i] = '*';
+                    sequenciaVisited[j] = true;
+                    printf("* ");
                     if(++acertos == 5){
                         snprintf(text[0], 32, "               ");
                         snprintf(text[1], 32, "               ");
@@ -669,39 +659,29 @@ void jogo2(){
 
                 }else {
                     for(int j = 0; j < 5; j++){
-                        if(playerChoice[i] == sequencia[j] && playerChoice[j] != sequencia[j]){
-                            for(int i = 0; i < 6; i++){
-                                if(lugarErrado[i] == '\0'){
-                                    lugarErrado[i] = playerChoice[i];
-                                    lugarErrado[i+1] = '\0';
-                                    break;
-                                }
-                            }
+                        if(i != j && playerChoice[i] == sequencia[j] && !sequenciaVisited[j] && playerChoice[j] != sequencia[j]){
+                            status[i] = '_';
+                            printf("# ");
                             encontrado = true;
+                            sequenciaVisited[j] = true;
                             break;
                         }
                     }
                     if(!encontrado){
-                        for(int i = 0; i < 6; i++){
-                            if(ausente[i] == '\0'){
-                                ausente[i] = playerChoice[i];
-                                ausente[i+1] = '\0';
-                                break;
-                            }
-                        }
+                        status[i] = 'x';
+                        printf("x ");
                     }
                 }
             }
             snprintf(text[0], 32, "               ");
-            snprintf(text[1], 32, "               ");
-            snprintf(text[2], 32, " lugar errado: ");
-            snprintf(text[3], 32, " %s ", lugarErrado);
+            snprintf(text[1], 32, "*: certo       ");
+            snprintf(text[2], 32, "_: lugar errado");
+            snprintf(text[3], 32, "x: ausente     ");
             snprintf(text[4], 32, "               ");
-            snprintf(text[5], 32, "   ausente:    ");
-            snprintf(text[6], 32, " %s ", ausente);
+            snprintf(text[5], 32, "     %s    ", status);
+            snprintf(text[6], 32, "               ");
             snprintf(text[7], 32, "               ");
             displayOled(text, count_of(text));
-            imprimir_desenho(game2, pio, sm);
         }
         if(situation){
             situation = false;
@@ -739,6 +719,8 @@ int main()
         const uint bar_width = 40;
         const uint adc_max = (1 << 12) - 1; 
         uint bar_y_pos = adc_y_raw * bar_width / adc_max;
+
+        //Verifica se o usuário fez a troca entre as opções de jogos
         if(switchGame && bar_y_pos < 16){
             switchGame = !switchGame;
             mainMenu(menu, count_of(menu), bar_y_pos);
@@ -746,6 +728,8 @@ int main()
             switchGame = !switchGame;
             mainMenu(menu, count_of(menu), bar_y_pos);
         }
+
+        //Verifica se o jogador selecinou alguma opçãode jogo
         if(!gpio_get(btnJ) && switchGame){
             jogo1();
             mainMenu(menu, count_of(menu), 25);
@@ -753,6 +737,6 @@ int main()
             jogo2();
             mainMenu(menu, count_of(menu), 15);
         }
-        sleep_ms(50);
+        sleep_ms(50); // Deboucing
     }
 }
