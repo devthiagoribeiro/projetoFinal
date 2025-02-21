@@ -1,0 +1,4 @@
+[wokwi]
+version = 1
+firmware = 'build/brainWave.uf2'
+elf = 'build/brainWave.elf'

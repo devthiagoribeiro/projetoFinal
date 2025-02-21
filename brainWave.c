@@ -18,7 +18,7 @@
 #define btnA 5
 #define btnB 6
 #define btnJ 22
-#define VRY 26
+#define VRY 27
 #define VRX 26
 #define FREQ_A 440  // Nota A (440 Hz)
 #define FREQ_B 494  // Nota B (494 Hz)
