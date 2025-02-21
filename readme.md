@@ -47,4 +47,4 @@ O **BrainWave** é um sistema interativo desenvolvido para a placa de ensino **B
 
 ## Demonstração
 
-**🎥[Clique para assistir o vídeo](https://youtu.be)**
+**🎥[Clique para assistir o vídeo](https://youtu.be/PJU2xTsRvgE)**
